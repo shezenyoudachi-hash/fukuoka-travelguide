@@ -17,7 +17,5 @@ services:
       DATABASE_URL: jdbc:postgresql://db:5432/fukuoka
       DATABASE_USER: fukuoka
       DATABASE_PASSWORD: fukuoka
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
     ports:
       - "8080:8080"

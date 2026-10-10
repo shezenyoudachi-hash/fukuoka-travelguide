@@ -1,13 +1,15 @@
 package com.fukuokatabi.preference;
 
 import com.fukuokatabi.spot.Spot;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * APIキーなしで動く、キーワード辞書による解釈。Claude が使えないときの代替にもなる。
+ * キーワード辞書による自由記述の解釈。外部サービスは使わない。
  */
+@Component
 public class RuleBasedInterpreter implements PreferenceInterpreter {
 
     private record Rule(Pattern pattern, Map<String, Integer> boosts, String note) {

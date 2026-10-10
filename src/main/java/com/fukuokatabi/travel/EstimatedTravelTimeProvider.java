@@ -1,9 +1,12 @@
 package com.fukuokatabi.travel;
 
+import org.springframework.stereotype.Component;
+
 /**
- * APIキーなしで使う、直線距離からの所要時間の推定。
+ * 直線距離からの所要時間の推定。外部サービスは使わない。
  * 道のりは直線の約1.3倍とし、乗り換え・待ち時間を固定で足す。
  */
+@Component
 public class EstimatedTravelTimeProvider implements TravelTimeProvider {
 
     private static final double ROAD_FACTOR = 1.3;

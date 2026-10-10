@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface PreferenceInterpreter {
 
-    /** 実装名（rule / claude） */
+    /** 実装名 */
     String name();
 
     /**
@@ -15,9 +15,4 @@ public interface PreferenceInterpreter {
      */
     Interpretation interpret(String freeText, List<Spot> spots);
 
-    /** 解釈で使えるタグ。Claude への指示にも使う */
-    List<String> KNOWN_TAGS = List.of(
-            "food", "history", "nature", "shop", "art",
-            "ramen", "motsu", "mizutaki", "yatai", "seafood",
-            "family", "couple", "friends", "slow");
 }

@@ -75,8 +75,7 @@ public class PlanService {
                 chips(a, pace),
                 days,
                 tips(a, in, dayPicks),
-                new InterpretationSummary(in.source(), in.notes()),
-                new Providers(interpreter.name(), travel.name()));
+                new InterpretationSummary(in.source(), in.notes()));
     }
 
     // ---- 候補の絞り込みと点数 ----

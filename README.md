@@ -11,17 +11,14 @@ API は Web と（今後の）iOS アプリで共通に使えるようにして�
 - 自由記述の解釈（行きたい・行きたくない場所、苦手なもの、雨・体力面など）
 - スポット間の移動時間を計算し、地図（OpenStreetMap）に表示
 
-## 外部 API キーと動作の切り替え
+## 外部サービスについて
 
-キーがなくても最後まで動きます。キーを設定すると自動で切り替わり、API が失敗したときはキーなしの実装に戻ります。
+有料の外部 API は使っていません。APIキーや登録も不要です。
 
-| 機能 | キーなし | キーあり |
-|---|---|---|
-| 自由記述の解釈 | キーワード辞書（`RuleBasedInterpreter`） | Claude API の構造化出力（`ClaudeInterpreter`）`ANTHROPIC_API_KEY` |
-| 移動時間 | 直線距離からの推定（`EstimatedTravelTimeProvider`） | Google Routes API（`GoogleRoutesTravelTimeProvider`）`GOOGLE_MAPS_API_KEY` |
+- 自由記述の解釈：キーワード辞書（`RuleBasedInterpreter`）
+- 移動時間：直線距離からの推定（`EstimatedTravelTimeProvider`）
 
-Claude のモデルは `ANTHROPIC_MODEL`（既定 `claude-haiku-5-5`）で変更できます。
-画面下の「解釈：rule ／ 移動時間：estimate」で、どちらで動いているかを確認できます。
+画面で読み込むのは、地図の画像（OpenStreetMap）とフォント（Google Fonts）だけで、どちらも無料です。
 
 ## 起動
 
@@ -36,12 +33,6 @@ mvn spring-boot:run
 
 ```bash
 docker compose up --build   # PostgreSQL + アプリ
-```
-
-キーを使う場合:
-
-```bash
-ANTHROPIC_API_KEY=sk-ant-... GOOGLE_MAPS_API_KEY=... mvn spring-boot:run
 ```
 
 ## API
@@ -69,8 +60,8 @@ src/main/java/com/fukuokatabi/
   spot/        スポットのエンティティとリポジトリ
   question/    質問の定義
   plan/        プラン作成（点数づけ・日ごとの割り当て・時間割）
-  preference/  自由記述の解釈（ルールベース / Claude）
-  travel/      移動時間（推定 / Google Routes）
+  preference/  自由記述の解釈（キーワード辞書）
+  travel/      移動時間（距離からの推定）
   config/      設定とキーによる実装の切り替え
   web/         REST API
 src/main/resources/

@@ -7,7 +7,7 @@ import java.util.Set;
 /**
  * 自由記述から読み取った好み。プランの点数づけに上乗せする。
  *
- * @param source       rule / claude
+ * @param source       解釈した実装名
  * @param tagBoosts    タグごとの加点（例: nature → 2）
  * @param mustInclude  必ず入れたいスポットID
  * @param exclude      外したいスポットID

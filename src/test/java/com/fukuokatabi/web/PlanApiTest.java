@@ -13,7 +13,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(properties = {"app.anthropic.api-key=", "app.google.api-key="})
+@SpringBootTest
 @AutoConfigureMockMvc
 class PlanApiTest {
 
@@ -47,9 +47,7 @@ class PlanApiTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.days", hasSize(2)))
                 .andExpect(jsonPath("$.days[0].items[*].kind", hasItem("spot")))
-                .andExpect(jsonPath("$.days[0].items[*].kind", hasItem("night")))
-                .andExpect(jsonPath("$.providers.interpreter").value("rule"))
-                .andExpect(jsonPath("$.providers.travel").value("estimate"));
+                .andExpect(jsonPath("$.days[0].items[*].kind", hasItem("night")));
     }
 
     @Test

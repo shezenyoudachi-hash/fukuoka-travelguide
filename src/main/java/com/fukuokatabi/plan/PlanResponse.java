@@ -10,8 +10,7 @@ public record PlanResponse(
         List<String> chips,
         List<Day> days,
         List<String> tips,
-        InterpretationSummary interpretation,
-        Providers providers) {
+        InterpretationSummary interpretation) {
 
     public record TripType(String mark, String title, String subtitle) {}
 
@@ -30,7 +29,4 @@ public record PlanResponse(
     }
 
     public record InterpretationSummary(String source, List<String> notes) {}
-
-    /** どの実装で作ったか（rule/claude, estimate/google）。開発時の確認用 */
-    public record Providers(String interpreter, String travel) {}
 }

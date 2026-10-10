@@ -127,8 +127,7 @@ function renderResult(p) {
 
   html += `<section class="card"><h3 style="font-family:var(--display);margin:0 0 8px">旅のヒント</h3>
     <ul class="tips">${p.tips.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>
-    <div class="nav"><button class="btn ghost" id="edit">答えを変える</button><button class="btn" id="restart">最初からやり直す</button></div>
-    <p class="provider">解釈：${esc(p.providers.interpreter)} ／ 移動時間：${esc(p.providers.travel)}</p></section>`;
+    <div class="nav"><button class="btn ghost" id="edit">答えを変える</button><button class="btn" id="restart">最初からやり直す</button></div></section>`;
   app.innerHTML = html;
 
   p.days.forEach((day, i) => drawMap(`map-${i}`, day.items));

@@ -85,4 +85,3 @@ h1 em{font-style:normal;color:var(--ai)}
 .loading{display:flex;align-items:center;gap:10px;color:var(--muted)}
 .loading::before{content:"";width:18px;height:18px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--ai);animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.provider{font-size:11.5px;color:var(--muted);margin-top:10px}

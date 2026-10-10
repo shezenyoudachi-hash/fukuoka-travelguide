@@ -9,11 +9,11 @@ public interface TravelTimeProvider {
     /**
      * @param minutes 所要時間（分）
      * @param km      距離
-     * @param source  estimate / google
+     * @param source  計算した実装名
      */
     record Leg(int minutes, double km, Mode mode, String source) {}
 
-    /** 実装名（estimate / google） */
+    /** 実装名 */
     String name();
 
     Leg between(Point from, Point to, Mode mode);
