@@ -1,0 +1,23 @@
+# 本番に近い構成（PostgreSQL）で動かす: docker compose up --build
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: fukuoka
+      POSTGRES_USER: fukuoka
+      POSTGRES_PASSWORD: fukuoka
+    ports:
+      - "5432:5432"
+  app:
+    build: .
+    depends_on:
+      - db
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DATABASE_URL: jdbc:postgresql://db:5432/fukuoka
+      DATABASE_USER: fukuoka
+      DATABASE_PASSWORD: fukuoka
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
+    ports:
+      - "8080:8080"
