@@ -9,7 +9,13 @@ import java.util.List;
 public record PlanRequest(
         @NotNull @Valid Answers answers,
         @Size(max = 500) String freeText,
-        LocalDate startDate) {
+        LocalDate startDate,
+        /** ここだけは絶対に行きたい場所（スポットID、3つまで） */
+        @Size(max = 3) List<@NotBlank @Size(max = 64) String> mustVisit) {
+
+    public List<String> mustVisitOrEmpty() {
+        return mustVisit == null ? List.of() : mustVisit;
+    }
 
     public record Answers(
             @Min(1) @Max(3) int days,

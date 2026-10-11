@@ -85,3 +85,11 @@ h1 em{font-style:normal;color:var(--ai)}
 .loading{display:flex;align-items:center;gap:10px;color:var(--muted)}
 .loading::before{content:"";width:18px;height:18px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--ai);animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+.spotgroup{margin-top:14px}
+.spotgroup h4{margin:0 0 8px;font-size:14px;display:flex;align-items:baseline;gap:8px}
+.spotgroup h4 small{font-weight:400;color:var(--muted);font-size:12px}
+.opts.mini{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.opts.mini .opt{padding:9px 12px}
+.picked{font-size:13.5px;margin:14px 0 0;color:var(--ink)}
+.tl li.must::after{width:14px;height:14px;left:46px;top:14px;border-color:var(--chochin);border-width:3px}
+.tl li.must .why{background:var(--chochin);color:var(--surface);font-weight:700}

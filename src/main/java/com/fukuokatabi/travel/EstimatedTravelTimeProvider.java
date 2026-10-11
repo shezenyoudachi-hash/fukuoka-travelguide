@@ -31,7 +31,7 @@ public class EstimatedTravelTimeProvider implements TravelTimeProvider {
         return new Leg((int) Math.ceil(minutes / 5.0) * 5, Math.round(km * 10) / 10.0, mode, name());
     }
 
-    static double haversineKm(Point a, Point b) {
+    public static double haversineKm(Point a, Point b) {
         double r = 6371.0;
         double dLat = Math.toRadians(b.lat() - a.lat());
         double dLng = Math.toRadians(b.lng() - a.lng());

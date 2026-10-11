@@ -42,7 +42,7 @@ public class ApiController {
         return planService.plan(request);
     }
 
-    /** スポット一覧（管理・確認用） */
+    /** スポット一覧（「絶対に行きたい場所」の選択肢にも使う） */
     @GetMapping("/spots")
     public List<SpotView> spots() {
         return spots.findAll().stream()
@@ -51,11 +51,12 @@ public class ApiController {
                 .toList();
     }
 
-    public record SpotView(String id, String category, String name, String area, double lat, double lng,
+    public record SpotView(String id, String category, String name, String area, int farLevel, String note,
+                           double lat, double lng,
                            String openTime, String closeTime, List<String> closedDays, boolean hoursVerified) {
         static SpotView of(Spot s) {
             return new SpotView(s.getId(), s.getCategory().name(), s.getName(), s.getArea(),
-                    s.getLatitude(), s.getLongitude(),
+                    s.getFarLevel(), s.getNote(), s.getLatitude(), s.getLongitude(),
                     s.getOpenTime() == null ? null : s.getOpenTime().toString(),
                     s.getCloseTime() == null ? null : s.getCloseTime().toString(),
                     s.closedDaysOfWeek().stream().map(Enum::name).toList(),

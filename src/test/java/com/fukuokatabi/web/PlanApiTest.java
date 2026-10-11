@@ -28,6 +28,91 @@ class PlanApiTest {
                 date == null ? "null" : "\"" + date + "\"");
     }
 
+    private static String withMust(String answers, String date, String mustVisitJson) {
+        return """
+                {"answers": %s, "startDate": "%s", "mustVisit": %s}
+                """.formatted(answers, date, mustVisitJson);
+    }
+
+    private static final String ART_DAY = """
+            {"days":1,"who":"solo","main":["art"],"eat":[],"pace":"mid","move":"train","night":"rest","range":"city"}""";
+
+    @Test
+    void 絶対に行きたい場所は範囲外でも入り_その周辺で組む() throws Exception {
+        // 2026-10-13 は火曜。範囲は「中心部だけ」でも太宰府を入れ、近くの九州国立博物館を組み合わせる
+        mvc.perform(post("/api/plans").contentType(MediaType.APPLICATION_JSON)
+                        .content(withMust(ART_DAY, "2026-10-13", "[\"dazaifu-tenmangu\"]")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.days[0].items[*].spotId", hasItem("dazaifu-tenmangu")))
+                .andExpect(jsonPath("$.days[0].items[*].spotId", hasItem("kyuhaku")))
+                .andExpect(jsonPath("$.days[0].items[*].spotId", not(hasItem("fukuoka-art"))))
+                .andExpect(jsonPath("$.days[0].headline", containsString("太宰府天満宮")))
+                .andExpect(jsonPath("$.days[0].items[?(@.spotId == 'dazaifu-tenmangu')].why",
+                        hasItem("絶対に行きたい場所")));
+    }
+
+    @Test
+    void 車がなくても絶対に行きたい場所は入れて注意を出す() throws Exception {
+        mvc.perform(post("/api/plans").contentType(MediaType.APPLICATION_JSON)
+                        .content(withMust(ART_DAY, "2026-10-13", "[\"munakata-taisha\"]")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.days[0].items[?(@.spotId == 'munakata-taisha')].warning",
+                        hasItem(containsString("車がないと"))));
+    }
+
+    @Test
+    void 休館日しかなくても入れて注意を出す() throws Exception {
+        // 2026-10-12 は月曜（九州国立博物館の休館日として登録）
+        mvc.perform(post("/api/plans").contentType(MediaType.APPLICATION_JSON)
+                        .content(withMust(ART_DAY, "2026-10-12", "[\"kyuhaku\"]")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.days[0].items[?(@.spotId == 'kyuhaku')].warning",
+                        hasItem(containsString("休館日"))));
+    }
+
+    @Test
+    void 休館日を避けて日を割り当てる() throws Exception {
+        String twoDays = ART_DAY.replace("\"days\":1", "\"days\":2");
+        // 1日目が月曜、2日目が火曜。九州国立博物館は火曜の日に入る
+        mvc.perform(post("/api/plans").contentType(MediaType.APPLICATION_JSON)
+                        .content(withMust(twoDays, "2026-10-12", "[\"kyuhaku\"]")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.days[0].items[*].spotId", not(hasItem("kyuhaku"))))
+                .andExpect(jsonPath("$.days[1].items[*].spotId", hasItem("kyuhaku")));
+    }
+
+    @Test
+    void 離れた場所は別の日に_近い場所は同じ日にまとめる() throws Exception {
+        String twoDays = ART_DAY.replace("\"days\":1", "\"days\":2");
+        mvc.perform(post("/api/plans").contentType(MediaType.APPLICATION_JSON)
+                        .content(withMust(twoDays, "2026-10-13", "[\"mojiko\", \"yanagawa\"]")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.days[0].items[*].spotId",
+                        anyOf(hasItem("mojiko"), hasItem("yanagawa"))))
+                .andExpect(jsonPath("$.days[0].items[*].spotId",
+                        not(allOf(hasItem("mojiko"), hasItem("yanagawa")))))
+                .andExpect(jsonPath("$.days[1].items[*].spotId",
+                        anyOf(hasItem("mojiko"), hasItem("yanagawa"))));
+
+        mvc.perform(post("/api/plans").contentType(MediaType.APPLICATION_JSON)
+                        .content(withMust(twoDays, "2026-10-13", "[\"kushida-jinja\", \"tochoji\"]")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.days[*].items[?(@.why == '絶対に行きたい場所')].spotId",
+                        hasSize(2)))
+                .andExpect(jsonPath("$.days[1].items[*].spotId",
+                        allOf(hasItem("kushida-jinja"), hasItem("tochoji"))));
+    }
+
+    @Test
+    void 絶対に行きたい場所は3つまで_知らないIDは無視する() throws Exception {
+        mvc.perform(post("/api/plans").contentType(MediaType.APPLICATION_JSON)
+                        .content(withMust(ART_DAY, "2026-10-13", "[\"a\", \"b\", \"c\", \"d\"]")))
+                .andExpect(status().isBadRequest());
+        mvc.perform(post("/api/plans").contentType(MediaType.APPLICATION_JSON)
+                        .content(withMust(ART_DAY, "2026-10-13", "[\"no-such-spot\"]")))
+                .andExpect(status().isOk());
+    }
+
     private static final String SAMPLE = """
             {"days":2,"who":"friends","main":["food","history"],"eat":["motsu","ramen","yatai"],
              "pace":"mid","move":"train","night":"yatai","range":"near"}""";

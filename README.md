@@ -5,6 +5,7 @@ API は Web と（今後の）iOS アプリで共通に使えるようにして�
 
 ## できること
 
+- 最初に「ここだけは絶対に行きたい場所」を3か所まで選べる。選んだ場所は範囲・移動手段の設定に関係なく必ず入れ、その日は周辺（約12km以内）のスポットで組む。近い場所どうしは同じ日にまとめ、休館日を避けて日を割り当てる
 - 8つの質問（日数・同行者・目的・食べたいもの・ペース・移動手段・夜の過ごし方・行動範囲）＋出発日＋自由記述
 - 回答とスポットのタグを点数化し、エリアがまとまるように日ごとの時間割を作成
 - 出発日から休館日を避け、見頃の季節のスポットを加点
@@ -41,7 +42,7 @@ docker compose up --build   # PostgreSQL + アプリ
 |---|---|---|
 | GET | `/api/questions` | 質問の一覧（画面はこれを見て組み立てる） |
 | POST | `/api/plans` | 回答・自由記述・出発日からプランを作る |
-| GET | `/api/spots` | 登録スポットの一覧（確認用） |
+| GET | `/api/spots` | 登録スポットの一覧（「絶対に行きたい場所」の選択肢） |
 
 ```json
 POST /api/plans
@@ -49,7 +50,8 @@ POST /api/plans
   "answers": {"days": 2, "who": "friends", "main": ["food", "history"], "eat": ["motsu", "yatai"],
               "pace": "mid", "move": "train", "night": "yatai", "range": "near"},
   "freeText": "太宰府には行きたい。雨なら屋内多めで。",
-  "startDate": "2026-10-17"
+  "startDate": "2026-10-17",
+  "mustVisit": ["dazaifu-tenmangu"]
 }
 ```
 

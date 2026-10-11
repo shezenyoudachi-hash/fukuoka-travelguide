@@ -2,7 +2,10 @@
 
 const app = document.getElementById("app");
 let QUESTIONS = [];
+let SPOTS = [];
 let ans = {};
+let mustVisit = [];
+const MUST_MAX = 3;
 let extra = { startDate: "", freeText: "" };
 let step = 0;
 let maps = [];
@@ -11,14 +14,16 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "
 
 const SAMPLE = {
   answers: { days: 2, who: "friends", main: ["food", "history"], eat: ["motsu", "ramen", "yatai"], pace: "mid", move: "train", night: "yatai", range: "near" },
-  freeText: "太宰府には行きたい。雨なら屋内多めで。",
+  mustVisit: ["dazaifu-tenmangu"],
+  freeText: "雨なら屋内多めで。",
 };
 
 async function init() {
   try {
-    const res = await fetch("api/questions");
-    if (!res.ok) throw new Error(res.status);
-    QUESTIONS = await res.json();
+    const [qr, sr] = await Promise.all([fetch("api/questions"), fetch("api/spots")]);
+    if (!qr.ok || !sr.ok) throw new Error(qr.status);
+    QUESTIONS = await qr.json();
+    SPOTS = (await sr.json()).filter((s) => s.category === "SIGHT");
     intro();
   } catch (e) {
     app.innerHTML = `<section class="card"><p class="error">質問を読み込めませんでした。時間をおいて再読み込みしてください。</p></section>`;
@@ -27,22 +32,57 @@ async function init() {
 
 function intro() {
   app.innerHTML = `<section class="card"><div class="qnum">はじめに</div><h2 class="q">所要時間は1分ほど</h2>
-  <p class="hint">日数・同行者・食べたいもの・夜の過ごし方などを聞いて、行き先と時間割を組み立てます。最後に自由に希望も書けます。</p>
+  <p class="hint">まず「ここだけは絶対に行きたい場所」を選び、日数・同行者・食べたいもの・夜の過ごし方などを聞いて、行き先と時間割を組み立てます。</p>
   <div class="nav"><button class="btn ghost" id="sample">サンプル結果を見る</button><button class="btn" id="start">質問をはじめる</button></div></section>`;
   document.getElementById("start").onclick = () => { step = 0; renderQ(); };
   document.getElementById("sample").onclick = () => requestPlan({ ...SAMPLE, startDate: nextSaturday() });
 }
 
-const total = () => QUESTIONS.length + 1; // 最後に「日付と自由記述」
+// step 0: 絶対に行きたい場所 / 1..N: 質問 / N+1: 日付と自由記述
+const total = () => QUESTIONS.length + 2;
 
 function progress() {
   return `<div class="progress">${Array.from({ length: total() }, (_, i) => `<span class="${i <= step ? "on" : ""}"></span>`).join("")}</div>
   <div class="qnum">質問 ${step + 1} / ${total()}</div>`;
 }
 
+const FAR_GROUPS = [
+  [0, "福岡市内", "博多・天神・ベイエリア"],
+  [1, "近郊", "電車や車で30分〜1時間"],
+  [2, "遠出", "片道1時間以上"],
+];
+
+function renderMust() {
+  const selected = mustVisit.map((id) => SPOTS.find((s) => s.id === id)).filter(Boolean);
+  app.innerHTML = `<section class="card" aria-live="polite">${progress()}
+   <h2 class="q">ここだけは絶対に行きたい場所はありますか？</h2>
+   <p class="hint">選んだ場所は必ずプランに入れ、その日はその周辺をめぐるように組みます。${MUST_MAX}か所まで選べます。</p>
+   ${FAR_GROUPS.map(([lv, label, sub]) => {
+     const list = SPOTS.filter((s) => s.farLevel === lv);
+     if (!list.length) return "";
+     return `<div class="spotgroup"><h4>${label}<small>${sub}</small></h4><div class="opts mini">${list.map((s) =>
+       `<button class="opt" id="must-${esc(s.id)}" data-id="${esc(s.id)}" aria-pressed="${mustVisit.includes(s.id)}"><b>${esc(s.name)}</b><small>${esc(s.area)}</small></button>`).join("")}</div></div>`;
+   }).join("")}
+   <p class="picked">${selected.length ? `選択中：${selected.map((s) => esc(s.name)).join("、")}` : "選ばなくても大丈夫です。好みからおまかせで組みます。"}</p>
+   <div class="nav"><button class="btn ghost" id="back">戻る</button>
+   <button class="btn" id="next">${selected.length ? "この場所で決める" : "特になし・次へ"}</button></div></section>`;
+  app.querySelectorAll("[data-id]").forEach((b) => (b.onclick = () => {
+    const id = b.dataset.id;
+    if (mustVisit.includes(id)) mustVisit = mustVisit.filter((x) => x !== id);
+    else { if (mustVisit.length >= MUST_MAX) mustVisit.shift(); mustVisit.push(id); }
+    const y = scrollY;
+    renderMust();
+    scrollTo(0, y);
+    document.getElementById("must-" + id)?.focus();
+  }));
+  document.getElementById("back").onclick = intro;
+  document.getElementById("next").onclick = () => { step++; renderQ(); };
+}
+
 function renderQ() {
-  if (step >= QUESTIONS.length) return renderFinish();
-  const Q = QUESTIONS[step];
+  if (step === 0) return renderMust();
+  if (step > QUESTIONS.length) return renderFinish();
+  const Q = QUESTIONS[step - 1];
   const multi = Q.multi > 0;
   const cur = ans[Q.id] ?? (multi ? [] : null);
   app.innerHTML = `<section class="card" aria-live="polite">${progress()}
@@ -64,7 +104,7 @@ function renderQ() {
       renderQ();
     }
   }));
-  document.getElementById("back").onclick = () => { if (step === 0) intro(); else { step--; renderQ(); } };
+  document.getElementById("back").onclick = () => { step--; renderQ(); };
   const n = document.getElementById("next");
   if (n) n.onclick = () => { step++; renderQ(); };
 }
@@ -75,7 +115,7 @@ function renderFinish() {
    <h2 class="q">最後に、日付とご希望を</h2><p class="hint">休館日を避けたり、季節の見どころを入れたりするのに使います。</p>
    <div class="field"><label for="startDate">出発日</label><input type="date" id="startDate" value="${esc(extra.startDate)}"></div>
    <div class="field"><label for="freeText">その他の希望（任意）</label>
-     <textarea id="freeText" maxlength="500" placeholder="例：太宰府には必ず行きたい。子どもが歩き疲れないように。雨なら屋内多めで。">${esc(extra.freeText)}</textarea>
+     <textarea id="freeText" maxlength="500" placeholder="例：子どもが歩き疲れないように。雨なら屋内多めで。屋台は苦手。">${esc(extra.freeText)}</textarea>
      <small>行きたい場所・苦手なもの・体力面など、自由に書いてください（500文字まで）。</small></div>
    <div class="nav"><button class="btn ghost" id="back">戻る</button><button class="btn" id="make">プランを作る</button></div></section>`;
   const save = () => {
@@ -89,6 +129,7 @@ function renderFinish() {
       answers: { ...ans, days: Number(ans.days), eat: ans.eat || [] },
       freeText: extra.freeText,
       startDate: extra.startDate || null,
+      mustVisit,
     });
   };
 }
@@ -131,14 +172,15 @@ function renderResult(p) {
   app.innerHTML = html;
 
   p.days.forEach((day, i) => drawMap(`map-${i}`, day.items));
-  document.getElementById("restart").onclick = () => { ans = {}; extra = { startDate: "", freeText: "" }; step = 0; renderQ(); scrollTo(0, 0); };
+  document.getElementById("restart").onclick = () => { ans = {}; mustVisit = []; extra = { startDate: "", freeText: "" }; step = 0; renderQ(); scrollTo(0, 0); };
   document.getElementById("edit").onclick = () => { step = 0; renderQ(); scrollTo(0, 0); };
   scrollTo({ top: app.offsetTop - 20, behavior: "smooth" });
 }
 
 function itemHtml(r) {
   if (r.kind === "move") return `<li class="move">↓ ${esc(r.name)}</li>`;
-  return `<li class="${r.kind === "night" ? "night" : ""}"><time>${esc(r.time)}</time><div class="body">
+  const cls = r.kind === "night" ? "night" : r.why === "絶対に行きたい場所" ? "must" : "";
+  return `<li class="${cls}"><time>${esc(r.time)}</time><div class="body">
     <div class="name">${esc(r.name)}${r.area ? `<span class="area">${esc(r.area)}</span>` : ""}</div>
     <p class="note">${esc(r.note)}</p>
     ${r.why ? `<span class="why">${esc(r.why)}</span>` : ""}${r.warning ? `<span class="warn">${esc(r.warning)}</span>` : ""}</div></li>`;
@@ -152,7 +194,8 @@ function drawMap(id, items) {
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18 }).addTo(map);
   const latlngs = pts.map((r) => [r.lat, r.lng]);
   pts.forEach((r, k) => {
-    L.circleMarker([r.lat, r.lng], { radius: 8, weight: 2, color: r.kind === "night" ? "#d9822b" : "#1f3f73", fillOpacity: 0.85 })
+    const must = r.why === "絶対に行きたい場所";
+    L.circleMarker([r.lat, r.lng], { radius: must ? 11 : 8, weight: 2, color: r.kind === "night" || must ? "#d9822b" : "#1f3f73", fillOpacity: 0.85 })
       .bindTooltip(`${k + 1}. ${r.name}`).addTo(map);
   });
   if (latlngs.length > 1) L.polyline(latlngs, { color: "#1f3f73", weight: 2, dashArray: "4 6" }).addTo(map);
