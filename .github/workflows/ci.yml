@@ -17,6 +17,15 @@ jobs:
           cache: maven
       - name: Build and test
         run: mvn -B verify
+      - name: Test summary
+        if: always()
+        run: |
+          for f in target/surefire-reports/TEST-*.xml; do
+            name=$(grep -o '<testsuite[^>]*name="[^"]*"' "$f" | sed -E 's/.*name="([^"]*)"/\1/')
+            tests=$(grep -o '<testsuite[^>]*tests="[0-9]*"' "$f" | sed -E 's/.*tests="([0-9]*)"/\1/')
+            fails=$(grep -o '<testsuite[^>]*failures="[0-9]*"' "$f" | sed -E 's/.*failures="([0-9]*)"/\1/')
+            echo "::notice title=${name##*.}::tests=${tests} failures=${fails}"
+          done
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
