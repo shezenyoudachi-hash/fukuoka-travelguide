@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>福岡たびコンシェルジュ</title>
+  <meta name="description" content="いくつかの質問に答えるだけで、好みに合った福岡の旅行プランを時間割つきで提案します。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@600;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="obi" aria-hidden="true"></div>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">FUKUOKA TRIP CONCIERGE</div>
+    <h1>いくつかの質問で、<br>あなたの<em>福岡旅</em>を組み立てます。</h1>
+    <p class="lead">屋台派？神社めぐり派？答えに合わせて、時間割つきのプランを提案します。</p>
+  </header>
+  <main id="app"><section class="card"><div class="loading">質問を読み込んでいます</div></section></main>
+  <p class="foot">営業時間・定休日・料金は変わることがあります。出発前に各公式情報をご確認ください。地図 © OpenStreetMap contributors</p>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>

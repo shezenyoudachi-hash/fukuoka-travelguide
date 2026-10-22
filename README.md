@@ -3,6 +3,13 @@
 いくつかの質問と自由記述から好みを読み取り、福岡の旅行プランを時間割つきで提案する Web サービスです。
 API は Web と（今後の）iOS アプリで共通に使えるようにしています。
 
+## 公開ページ
+
+https://shezenyoudachi-hash.github.io/fukuoka-travelguide/
+
+GitHub Pages で公開している Web 版は、プランをブラウザの中で作ります（サーバー不要）。
+main に push すると、GitHub Actions がテストを通してから自動で公開します（`.github/workflows/pages.yml`）。
+
 ## できること
 
 - 最初に「ここだけは絶対に行きたい場所」を3か所まで選べる。選んだ場所は範囲・移動手段の設定に関係なく必ず入れ、その日は周辺（約12km以内）のスポットで組む。近い場所どうしは同じ日にまとめ、休館日を避けて日を割り当てる
@@ -21,7 +28,31 @@ API は Web と（今後の）iOS アプリで共通に使えるようにして�
 
 画面で読み込むのは、地図の画像（OpenStreetMap）とフォント（Google Fonts）だけで、どちらも無料です。
 
-## 起動
+## Web 版（GitHub Pages）
+
+```
+web/
+  index.html, app.js, styles.css  画面
+  js/planner.js      プラン作成（Java 版 PlanService と同じ考え方）
+  js/interpreter.js  自由記述の解釈（RuleBasedInterpreter と同じ規則）
+  js/travel.js       移動時間の推定（EstimatedTravelTimeProvider と同じ計算）
+  js/questions.js    質問の定義
+  js/seed.js         初期データ SQL からスポットを読み込む
+  build.js           _site/ を作る（スポットは SQL から JSON に変換）
+  test/              テスト（node --test web/test/planner.test.js）
+```
+
+手元で確認する場合:
+
+```bash
+node web/build.js
+cd _site && python3 -m http.server 8000   # http://localhost:8000 を開く
+```
+
+スポットデータの元は Java 版と同じ `V2__seed_spots.sql` です。
+プランの作り方を変えるときは、Java 版（`src/main`）と Web 版（`web/js`）の両方を直してください。
+
+## Java 版（サーバー）の起動
 
 Java 21 と Maven が必要です。
 

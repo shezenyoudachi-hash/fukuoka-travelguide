@@ -1,0 +1,9 @@
+{
+  "name": "fukuoka-travelguide-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/",
+    "build": "node build.js"
+  }
+}
